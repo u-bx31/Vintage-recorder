@@ -1,0 +1,5 @@
+{
+  "name": "Vintage Vinyl Player",
+  "description": "A modern-classic music player with realistic vinyl animations, local audio upload via IndexedDB, and YouTube integration.",
+  "requestFramePermissions": []
+}
