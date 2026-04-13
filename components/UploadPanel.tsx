@@ -40,7 +40,7 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
     // Extract video ID
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = youtubeUrl.match(regExp);
-    const videoId = 'CbWVpRDF7bE';
+    const videoId = match && match[2].length === 11 ? match[2] : null;
 
     if (videoId) {
       const newTrack: Track = {

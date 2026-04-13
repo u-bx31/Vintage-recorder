@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import YouTube, { YouTubeProps } from "react-youtube";
 
 interface YouTubePlayerProps {
+	curentTrack: any;
 	videoId: string | null;
 	isPlaying: boolean;
 	volume: number;
@@ -14,6 +15,7 @@ interface YouTubePlayerProps {
 }
 
 export function YouTubePlayer({
+	curentTrack,
 	videoId,
 	isPlaying,
 	volume,
@@ -25,61 +27,56 @@ export function YouTubePlayer({
 	const playerRef = useRef<any>(null);
 	const [isPlayerReady, setIsPlayerReady] = useState(false);
 
+	if (
+		!videoId ||
+		typeof videoId !== "string" ||
+		videoId.trim() === ""
+	) {
+		return null;
+	}
+
 	const onPlayerReady: YouTubeProps["onReady"] = (event) => {
 		playerRef.current = event.target;
-		setIsPlayerReady(true);
 		event.target.setVolume(volume * 100);
-		onReady();
 	};
 
 	useEffect(() => {
-		if (!playerRef.current || !isPlayerReady) return;
-
 		if (isPlaying) {
-			playerRef.current.playVideo();
+			playerRef.current?.playVideo();
 		} else {
-			playerRef.current.pauseVideo();
+			playerRef.current?.pauseVideo();
 		}
 	}, [isPlaying, isPlayerReady]);
 
 	useEffect(() => {
-		if (!playerRef.current || !isPlayerReady) return;
-		playerRef.current.setVolume(volume * 100);
+		playerRef.current?.setVolume(volume * 100);
 	}, [volume, isPlayerReady]);
 
 	useEffect(() => {
-		if (!playerRef.current || !isPlayerReady) return;
-
 		try {
-			playerRef.current.seekTo(seekTo, true);
+			playerRef.current?.seekTo(seekTo, true);
 		} catch (e) {
 			console.warn("Player not ready", e);
 		}
 	}, [seekTo, isPlayerReady]);
 
 	useEffect(() => {
-		if (!playerRef.current || !isPlayerReady) return;
-
-		if (playerRef.current.getPlayerState() === 1) {
-			const currentTime = playerRef.current.getCurrentTime();
-			const duration = playerRef.current.getDuration();
-			onProgress(currentTime, duration);
-		}
+		const currentTime = playerRef.current?.getCurrentTime();
+		const duration = playerRef.current?.getDuration();
+		onProgress(currentTime, duration);
 	}, [isPlaying, isPlayerReady, onProgress]);
 
-	useEffect(() => {
-		return () => {
-			if (playerRef.current) {
-				try {
-					playerRef.current.destroy();
-				} catch (e) {
-					console.warn("Destroy failed", e);
-				}
-			}
-		};
-	}, []);
-
-	if (!videoId) return null;
+	// useEffect(() => {
+	// 	return () => {
+	// 		if (playerRef.current) {
+	// 			try {
+	// 				playerRef.current.destroy();
+	// 			} catch (e) {
+	// 				console.warn("Destroy failed", e);
+	// 			}
+	// 		}
+	// 	};
+	// }, []);
 
 	const opts: YouTubeProps["opts"] = {
 		height: "0",
@@ -97,6 +94,8 @@ export function YouTubePlayer({
 				typeof window !== "undefined" ? window.location.origin : "",
 		},
 	};
+	// console.log("ref", playerRef.current);
+	// console.log("isPlaying", isPlaying);
 
 	return (
 		<div className="absolute w-0 h-0 overflow-hidden">
@@ -105,7 +104,7 @@ export function YouTubePlayer({
 				opts={opts}
 				onReady={onPlayerReady}
 				onEnd={onEnded}
-				onError={(e) => console.error(e)}
+				loading="lazy"
 			/>
 		</div>
 	);
