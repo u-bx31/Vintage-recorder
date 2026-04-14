@@ -35,7 +35,7 @@ export default function Home() {
 		null,
 	);
 	const [isPlaying, setIsPlaying] = useState(false);
-	const [volume, setVolume] = useState(0.8);
+	const [volume, setVolume] = useState(1);
 	const [progress, setProgress] = useState(0);
 	const [duration, setDuration] = useState(0);
 	const [seekTo, setSeekTo] = useState<number | null>(null);
@@ -147,8 +147,8 @@ export default function Home() {
 	};
 
 	const handleSeek = (value: number) => {
-		setSeekTo(value);
 		setProgress(value);
+		setSeekTo(value);
 		// Reset seekTo after a short delay so it can be triggered again
 		setTimeout(() => setSeekTo(null), 100);
 	};

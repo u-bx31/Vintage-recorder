@@ -27,18 +27,12 @@ export function YouTubePlayer({
 	const playerRef = useRef<any>(null);
 	const [isPlayerReady, setIsPlayerReady] = useState(false);
 
-	if (
-		!videoId ||
-		typeof videoId !== "string" ||
-		videoId.trim() === ""
-	) {
-		return null;
-	}
-
 	const onPlayerReady: YouTubeProps["onReady"] = (event) => {
 		playerRef.current = event.target;
 		event.target.setVolume(volume * 100);
+		console.log("event", event);
 	};
+	// console.log('plyer',isPlaying);
 
 	useEffect(() => {
 		if (isPlaying) {
@@ -46,37 +40,50 @@ export function YouTubePlayer({
 		} else {
 			playerRef.current?.pauseVideo();
 		}
-	}, [isPlaying, isPlayerReady]);
+	}, [isPlaying]);
 
 	useEffect(() => {
 		playerRef.current?.setVolume(volume * 100);
-	}, [volume, isPlayerReady]);
+	}, [volume]);
 
 	useEffect(() => {
-		try {
+		if(seekTo !== null) {
 			playerRef.current?.seekTo(seekTo, true);
-		} catch (e) {
-			console.warn("Player not ready", e);
 		}
-	}, [seekTo, isPlayerReady]);
+	}, [seekTo]);
 
 	useEffect(() => {
-		const currentTime = playerRef.current?.getCurrentTime();
-		const duration = playerRef.current?.getDuration();
-		onProgress(currentTime, duration);
-	}, [isPlaying, isPlayerReady, onProgress]);
+		const interval = setInterval(() => {
+			if (isPlaying) {
+				const currentTime = playerRef.current.getCurrentTime();
+				const duration = playerRef.current.getDuration();
+				onProgress(currentTime, duration);
+			}
+		}, 1000);
 
-	// useEffect(() => {
-	// 	return () => {
-	// 		if (playerRef.current) {
-	// 			try {
-	// 				playerRef.current.destroy();
-	// 			} catch (e) {
-	// 				console.warn("Destroy failed", e);
-	// 			}
-	// 		}
-	// 	};
-	// }, []);
+		return () => clearInterval(interval);
+	}, [isPlaying, onProgress]);
+
+	useEffect(() => {
+		return () => {
+			if (playerRef.current) {
+				try {
+					console.log(1);
+					playerRef.current.destroy();
+				} catch (e) {
+					console.warn("Destroy failed", e);
+				}
+			}
+		};
+	}, []);
+
+	if (
+		!videoId ||
+		typeof videoId !== "string" ||
+		videoId.trim() === ""
+	) {
+		return null;
+	}
 
 	const opts: YouTubeProps["opts"] = {
 		height: "0",
@@ -94,8 +101,6 @@ export function YouTubePlayer({
 				typeof window !== "undefined" ? window.location.origin : "",
 		},
 	};
-	// console.log("ref", playerRef.current);
-	// console.log("isPlaying", isPlaying);
 
 	return (
 		<div className="absolute w-0 h-0 overflow-hidden">
@@ -104,7 +109,6 @@ export function YouTubePlayer({
 				opts={opts}
 				onReady={onPlayerReady}
 				onEnd={onEnded}
-				loading="lazy"
 			/>
 		</div>
 	);
