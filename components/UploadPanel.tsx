@@ -55,7 +55,11 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 	};
 
 	const handleYoutubeAdd = () => {
-		if (!youtubeUrl) return;
+		if (!youtubeUrl) 	return 	toast.error("Please enter a YouTube URL", {
+			position: "bottom-right",
+			style:{background : 'red', color: 'white'},
+			duration: Infinity
+		});
 
 		// Extract video ID
 		const regExp =

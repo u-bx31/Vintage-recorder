@@ -4,7 +4,8 @@ export async function GET(req: Request) {
 	try {
 		const { searchParams } = new URL(req.url);
 		const videoId = searchParams.get("id");
-
+		{/*fetch ratelimit from ip address, if too many requests, return 429 */}
+		
 		// const ip = req.headers.get("x-forwarded-for") ?? "anonymous";
 
 		// const { success } = await ratelimit.limit(ip);
