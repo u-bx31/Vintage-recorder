@@ -21,7 +21,7 @@ export function YouTubePlayer({
 	volume,
 	onProgress,
 	onEnded,
-	seekTo,
+	seekTo, 
 	onReady,
 }: YouTubePlayerProps) {
 	const playerRef = useRef<any>(null);
@@ -30,9 +30,8 @@ export function YouTubePlayer({
 	const onPlayerReady: YouTubeProps["onReady"] = (event) => {
 		playerRef.current = event.target;
 		event.target.setVolume(volume * 100);
-		console.log("event", event);
+		isPlaying && event.target.playVideo();
 	};
-	// console.log('plyer',isPlaying);
 
 	useEffect(() => {
 		if (isPlaying) {
@@ -68,7 +67,6 @@ export function YouTubePlayer({
 		return () => {
 			if (playerRef.current) {
 				try {
-					console.log(1);
 					playerRef.current.destroy();
 				} catch (e) {
 					console.warn("Destroy failed", e);
