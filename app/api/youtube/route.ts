@@ -1,5 +1,6 @@
 "use server";
 import { ratelimit } from "@/lib/rate-limit";
+import { parseDuration } from "@/lib/youtube";
 export async function GET(req: Request) {
 	try {
 		const { searchParams } = new URL(req.url);
@@ -42,7 +43,7 @@ export async function GET(req: Request) {
 
 		return Response.json({
 			title: video.snippet.title,
-			duration: video.contentDetails.duration,
+			duration: parseDuration(video.contentDetails.duration),
 			thumbnail: video.snippet.thumbnails.medium.url,
 		});
 	} catch (err) {

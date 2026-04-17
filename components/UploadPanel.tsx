@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, Youtube, Plus } from "lucide-react";
+import { Upload, Youtube, Plus, Loader2Icon } from "lucide-react";
 import { Track } from "@/lib/db";
 import { toast } from "sonner";
 
@@ -14,6 +14,7 @@ interface UploadPanelProps {
 
 export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 	const [youtubeUrl, setYoutubeUrl] = useState("");
+	const [checking, setChecking] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const handleFileUpload = (
@@ -55,40 +56,38 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 	};
 
 	const handleYoutubeAdd = () => {
-		if (!youtubeUrl) 	return 	toast.error("Please enter a YouTube URL", {
-			position: "bottom-right",
-		});
+		setChecking(true);
+		if (!youtubeUrl) {
+			setChecking(false);
+			return toast.error("Please enter a YouTube URL", {
+				position: "bottom-right",
+			});
+		}
 
 		// Extract video ID
 		const regExp =
 			/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
 		const match = youtubeUrl.match(regExp);
 		const videoId = match && match[2].length === 11 ? match[2] : null;
-		getVideoData(videoId!).then((data) => {
-			console.log(data);
-		});
-		// if (videoId) {
-		// 	getVideoData(videoId!)
-		// 		.then((data) => {
-		// 			console.log(data);
-		// 		})
-		// 		.catch((e) => {
-		// 			alert(
-		// 				"Failed to fetch video data. Please check the URL and try again.",
-		// 			);
-		// 		});
-		// 	// const newTrack: Track = {
-		// 	// 	id: crypto.randomUUID(),
-		// 	// 	title: `YouTube Audio (${videoId})`, // We can't easily get title without API key, so we use ID
-		// 	// 	duration: 0, // Duration will be updated when loaded
-		// 	// 	youtubeId: videoId,
-		// 	// 	type: "youtube",
-		// 	// };
-		// 	// onAddTrack(newTrack);
-		// 	// setYoutubeUrl("");
-		// } else {
-		// 	alert("Invalid YouTube URL");
-		// }
+
+		if (videoId) {
+			getVideoData(videoId!).then((data) => {
+				const newTrack: Track = {
+					id: crypto.randomUUID(),
+					title: `${data?.title}`, // We can't easily get title without API key, so we use ID
+					duration: data?.duration, // Duration will be updated when loaded
+					youtubeId: videoId,
+					type: "youtube",
+				};
+				onAddTrack(newTrack);
+				setYoutubeUrl("");
+			});
+
+			setChecking(false);
+		} else {
+			toast.error("Invalid video ID", { position: "bottom-right" });
+			setChecking(false);
+		}
 	};
 
 	return (
@@ -148,7 +147,11 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 							onClick={handleYoutubeAdd}
 							size="icon"
 							className="shrink-0">
-							<Plus className="w-4 h-4" />
+							{checking ? (
+								<Loader2Icon className="w-4 h-4 animate-spin " />
+							) : (
+								<Plus className="w-4 h-4" />
+							)}
 						</Button>
 					</div>
 				</div>

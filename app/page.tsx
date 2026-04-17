@@ -35,10 +35,6 @@ export default function Home() {
 		null,
 	);
 	const [isPlaying, setIsPlaying] = useState(false);
-	const [volume, setVolume] = useState(1);
-	const [progress, setProgress] = useState(0);
-	const [duration, setDuration] = useState(0);
-	const [seekTo, setSeekTo] = useState<number | null>(null);
 	const [crackleEnabled, setCrackleEnabled] = useState(false);
 	const crackleAudioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -102,55 +98,7 @@ export default function Home() {
 		if (currentTrack?.id === id) {
 			setCurrentTrack(null);
 			setIsPlaying(false);
-			setProgress(0);
-			setDuration(0);
 		}
-	};
-
-	const handlePlayPause = () => {
-		if (!currentTrack) return;
-		setIsPlaying(!isPlaying);
-	};
-
-	const handleNext = () => {
-		if (tracks.length === 0) return;
-		const currentIndex = tracks.findIndex(
-			(t) => t.id === currentTrack?.id,
-		);
-		const nextIndex = (currentIndex + 1) % tracks.length;
-		setCurrentTrack(tracks[nextIndex]);
-		setIsPlaying(true);
-		setProgress(0);
-	};
-
-	const handlePrevious = () => {
-		if (tracks.length === 0) return;
-		const currentIndex = tracks.findIndex(
-			(t) => t.id === currentTrack?.id,
-		);
-		const prevIndex =
-			(currentIndex - 1 + tracks.length) % tracks.length;
-		setCurrentTrack(tracks[prevIndex]);
-		setIsPlaying(true);
-		setProgress(0);
-	};
-	const handleProgress = useCallback(
-		(currentTime: number, totalDuration: number) => {
-			setProgress(currentTime);
-			if (totalDuration > 0) setDuration(totalDuration);
-		},
-		[],
-	);
-
-	const handleEnded = () => {
-		handleNext();
-	};
-
-	const handleSeek = (value: number) => {
-		setProgress(value);
-		setSeekTo(value);
-		// Reset seekTo after a short delay so it can be triggered again
-		setTimeout(() => setSeekTo(null), 100);
 	};
 
 	return (
@@ -201,7 +149,6 @@ export default function Home() {
 										onSelectTrack={(track) => {
 											setCurrentTrack(track);
 											setIsPlaying(true);
-											setProgress(0);
 										}}
 										onDeleteTrack={handleDeleteTrack}
 									/>
@@ -255,52 +202,15 @@ export default function Home() {
 						</div>
 
 						<Controls
+							tracks={tracks}
+							currentTrack={currentTrack}
+							setCurrentTrack={setCurrentTrack}
 							isPlaying={isPlaying}
-							onPlayPause={handlePlayPause}
-							onPrevious={handlePrevious}
-							onNext={handleNext}
-							volume={volume}
-							onVolumeChange={setVolume}
-							progress={progress}
-							duration={duration}
-							onSeek={handleSeek}
+							setIsPlaying={setIsPlaying}
 						/>
 					</div>
 				</div>
 			</main>
-
-			{/* Hidden Audio Engines */}
-			{currentTrack?.type === "local" && (
-				<AudioEngine
-					file={currentTrack.file || null}
-					isPlaying={isPlaying}
-					volume={volume}
-					onProgress={handleProgress}
-					onEnded={handleEnded}
-					seekTo={seekTo}
-					onReady={() => {
-						// Optional: handle ready state
-					}}
-				/>
-			)}
-
-			{currentTrack?.type === "youtube" &&
-				currentTrack?.youtubeId &&
-				currentTrack !== null && (
-					<YouTubePlayer
-						curentTrack={currentTrack}
-						key={currentTrack?.youtubeId}
-						videoId={currentTrack.youtubeId}
-						isPlaying={isPlaying}
-						volume={volume}
-						onProgress={handleProgress}
-						onEnded={handleEnded}
-						seekTo={seekTo}
-						onReady={() => {
-							// Optional: handle ready state
-						}}
-					/>
-				)}
 		</div>
 	);
 }

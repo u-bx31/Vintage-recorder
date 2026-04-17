@@ -61,7 +61,7 @@ export function YouTubePlayer({
 		}, 1000);
 
 		return () => clearInterval(interval);
-	}, [isPlaying, onProgress]);
+	}, [isPlaying]);
 
 	useEffect(() => {
 		return () => {
