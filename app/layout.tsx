@@ -29,7 +29,7 @@ export default function RootLayout({
 			<body
 				suppressHydrationWarning
 				className="font-sans antialiased text-amber-950 bg-amber-50 selection:bg-amber-900 selection:text-amber-50">
-				<Toaster />
+				<Toaster richColors   />
         {children}
 			</body>
 		</html>

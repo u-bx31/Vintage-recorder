@@ -57,8 +57,6 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 	const handleYoutubeAdd = () => {
 		if (!youtubeUrl) 	return 	toast.error("Please enter a YouTube URL", {
 			position: "bottom-right",
-			style:{background : 'red', color: 'white'},
-			duration: Infinity
 		});
 
 		// Extract video ID
@@ -97,7 +95,7 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 		<div className="space-y-6">
 			<div className="space-y-4">
 				<div className="space-y-2">
-					<Label className="text-amber-950 font-serif">
+					<Label className="text-amber-950 font-medium">
 						Local Audio File
 					</Label>
 					<div className="flex items-center gap-4">
@@ -118,7 +116,7 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 					</div>
 				</div>
 
-				<div className="relative">
+				<div className="relative mb-2">
 					<div className="absolute inset-0 flex items-center">
 						<span className="w-full border-t border-amber-900/10" />
 					</div>
@@ -130,7 +128,7 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 				</div>
 
 				<div className="space-y-2">
-					<Label className="text-amber-950 font-serif">
+					<Label className="text-amber-950 font-medium">
 						YouTube URL
 					</Label>
 					<div className="flex items-center gap-2">

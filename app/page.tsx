@@ -186,13 +186,13 @@ export default function Home() {
 							</DialogHeader>
 							<div className="grid md:grid-cols-2 gap-6 mt-4">
 								<div>
-									<h4 className="text-sm font-medium mb-3 text-amber-950">
+									<h4 className="text-sm font-extrabold mb-3 text-amber-950">
 										Add New Track
 									</h4>
 									<UploadPanel onAddTrack={handleAddTrack} />
 								</div>
 								<div>
-									<h4 className="text-sm font-medium mb-3 text-amber-950">
+									<h4 className="text-sm font-extrabold mb-3 text-amber-950">
 										Your Tracks
 									</h4>
 									<TrackList
@@ -229,7 +229,7 @@ export default function Home() {
 			<main className="flex-1 relative z-10 flex flex-col items-center justify-center p-6">
 				<div className="w-full max-w-4xl mx-auto grid lg:grid-cols-1 gap-12 items-center">
 					{/* Player Visuals */}
-					<div className="flex flex-col items-center justify-center space-y-12">
+					<div className="flex flex-col items-center justify-center space-y-6">
 						<VintagePlayer
 							isPlaying={isPlaying}
 							coverArt={

@@ -11,7 +11,7 @@ interface VintagePlayerProps {
 
 export function VintagePlayer({ isPlaying, coverArt }: VintagePlayerProps) {
   return (
-    <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 mx-auto flex items-center justify-center">
+    <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-92 md:h-92 mx-auto flex items-center justify-center">
       {/* Base/Platter */}
       <div className="absolute inset-0 rounded-full bg-amber-950 shadow-2xl border-4 border-amber-900/50 flex items-center justify-center">
         {/* Vinyl Disc */}
@@ -61,7 +61,7 @@ export function VintagePlayer({ isPlaying, coverArt }: VintagePlayerProps) {
         {/* Arm */}
         <div className="absolute top-4 right-3 w-2 h-36 bg-zinc-200 rounded-full shadow-sm origin-top transform -rotate-6"></div>
         {/* Headshell */}
-        <div className="absolute bottom-6 right-5 w-4 h-8 bg-zinc-800 rounded-sm shadow-md transform rotate-12"></div>
+        <div className="absolute bottom-6 right-5 w-4 h-8 bg-zinc-800 rounded-sm shadow-md transform rotate-10"></div>
       </div>
     </div>
   );

@@ -36,7 +36,7 @@ export function Controls({
   onSeek
 }: ControlsProps) {
   return (
-    <div className="w-full max-w-md mx-auto space-y-6 mt-8">
+    <div className="w-full max-w-md mx-auto space-y-6 mt-8 md:mt-1">
       {/* Progress Bar */}
       <div className="space-y-2">
         <Slider
