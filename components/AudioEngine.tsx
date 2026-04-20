@@ -1,89 +1,133 @@
-"use client"
+"use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 
 interface AudioEngineProps {
-  file: File | null;
-  isPlaying: boolean;
-  volume: number;
-  onProgress: (currentTime: number, duration: number) => void;
-  onEnded: () => void;
-  seekTo: number | null;
-  onReady: () => void;
+	file: File | null;
+	isPlaying: boolean;
+	volume: number;
+	onProgress: (currentTime: number, duration: number) => void;
+	onEnded: () => void;
+	seekTo: number | null;
+	onReady: () => void;
 }
 
 export function AudioEngine({
-  file,
-  isPlaying,
-  volume,
-  onProgress,
-  onEnded,
-  seekTo,
-  onReady
+	file,
+	isPlaying,
+	volume,
+	onProgress,
+	onEnded,
+	seekTo,
+	onReady,
 }: AudioEngineProps) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const objectUrlRef = useRef<string | null>(null);
+	const audioRef = useRef<HTMLAudioElement >(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
+	const objectUrlRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (!file) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-      }
-      return;
+	useEffect(() => {
+		if (!file) {
+			if (audioRef.current) {
+				audioRef.current.pause();
+				audioRef.current.src = "";
+			}
+			return;
+		}
+
+		const url = URL.createObjectURL(file);
+		objectUrlRef.current = url;
+
+		if (audioRef.current) {
+			audioRef.current.src = url;
+      if (!audioContextRef.current) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioContextRef.current = new AudioContext();
+    }
+    
+    const ctx = audioContextRef.current;
+
+    // 2. ONLY create the source if we haven't already
+    if (!sourceNodeRef.current) {
+      sourceNodeRef.current = ctx.createMediaElementSource(audioRef.current);
     }
 
-    const url = URL.createObjectURL(file);
-    objectUrlRef.current = url;
+    const source = sourceNodeRef.current;
 
-    if (audioRef.current) {
-      audioRef.current.src = url;
-      audioRef.current.load();
-    }
+    // 3. Re-build the filters
+    const bandpass = ctx.createBiquadFilter();
+    bandpass.type = 'bandpass';
+    bandpass.frequency.value = 2000;
 
-    return () => {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-      }
-    };
-  }, [file]);
+    const highpass = ctx.createBiquadFilter();
+    highpass.type = 'highpass';
+    highpass.frequency.value = 200;
 
-  useEffect(() => {
-    if (!audioRef.current) return;
+    const lowpass = ctx.createBiquadFilter();
+    lowpass.type = 'lowpass';
+    lowpass.frequency.value = 4000;
 
-    if (isPlaying) {
-      audioRef.current.play().catch(e => console.error("Playback failed", e));
-    } else {
-      audioRef.current.pause();
-    }
-  }, [isPlaying]);
+    // 4. IMPORTANT: Disconnect anything previously connected to the source
+    // This allows you to "re-wire" the chain if settings change
+    source.disconnect(); 
 
-  useEffect(() => {
-    if (!audioRef.current) return;
-    audioRef.current.volume = volume;
-  }, [volume]);
+    // 5. Connect the chain
+    source.connect(bandpass);
+    bandpass.connect(highpass);
+    highpass.connect(lowpass);
+    lowpass.connect(ctx.destination);
+			audioRef.current.load();
+		}
 
-  useEffect(() => {
-    if (!audioRef.current || seekTo === null) return;
-    audioRef.current.currentTime = seekTo;
-  }, [seekTo]);
+		return () => {
+			if (objectUrlRef.current) {
+				URL.revokeObjectURL(objectUrlRef.current);
+			}
+		};
+	}, [file]);
 
-  const handleTimeUpdate = () => {
-    if (!audioRef.current) return;
-    onProgress(audioRef.current.currentTime, audioRef.current.duration);
-  };
 
-  const handleLoadedMetadata = () => {
-    onReady();
-  };
+	useEffect(() => {
+		if (!audioRef.current) return;
 
-  return (
-    <audio
-      ref={audioRef}
-      onTimeUpdate={handleTimeUpdate}
-      onEnded={onEnded}
-      onLoadedMetadata={handleLoadedMetadata}
-      className="hidden"
-    />
-  );
+		if (isPlaying) {
+			audioRef.current
+				.play()
+				.catch((e) => console.error("Playback failed", e));
+		} else {
+			audioRef.current.pause();
+		}
+	}, [isPlaying]);
+
+	useEffect(() => {
+		if (!audioRef.current) return;
+		audioRef.current.volume = volume;
+	}, [volume]);
+
+	useEffect(() => {
+		if (!audioRef.current || seekTo === null) return;
+		audioRef.current.currentTime = seekTo;
+	}, [seekTo]);
+
+	const handleTimeUpdate = () => {
+		if (!audioRef.current) return;
+		onProgress(
+			audioRef.current.currentTime,
+			audioRef.current.duration,
+		);
+	};
+
+	const handleLoadedMetadata = () => {
+		onReady();
+	};
+
+	return (
+		<audio
+			ref={audioRef}
+			onTimeUpdate={handleTimeUpdate}
+			onEnded={onEnded}
+			onLoadedMetadata={handleLoadedMetadata}
+			className="hidden"
+		/>
+	);
 }

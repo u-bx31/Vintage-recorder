@@ -74,8 +74,8 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 			getVideoData(videoId!).then((data) => {
 				const newTrack: Track = {
 					id: crypto.randomUUID(),
-					title: `${data?.title}`, // We can't easily get title without API key, so we use ID
-					duration: data?.duration, // Duration will be updated when loaded
+					title: `${data?.title}`, 
+					duration: data?.duration,
 					youtubeId: videoId,
 					type: "youtube",
 				};
