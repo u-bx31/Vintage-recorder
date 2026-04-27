@@ -3,7 +3,8 @@
 import React, { useEffect, useRef } from "react";
 
 interface AudioEngineProps {
-	src ?: string | null;
+	file?: File | null;
+	src?: string | null;
 	isPlaying: boolean;
 	volume: number;
 	onProgress: (currentTime: number, duration: number) => void;
@@ -14,6 +15,7 @@ interface AudioEngineProps {
 }
 
 export function AudioEngine({
+	file,
 	src,
 	isPlaying,
 	volume,
@@ -29,11 +31,22 @@ export function AudioEngine({
 		null,
 	);
 	const objectUrlRef = useRef<string | null>(null);
+	
 
 	useEffect(() => {
-		
+		// var url : any
+		if (!file) {
+			if (audioRef.current) {
+				audioRef.current.pause();
+				audioRef.current.src = "";
+			}
+
+		}
+		const url = file ? URL.createObjectURL(file) : src!;
+		objectUrlRef.current = url;
 
 		if (audioRef.current) {
+			audioRef.current.src = url;
 			if (!audioContextRef.current) {
 				const AudioContext =
 					window.AudioContext || window.webkitAudioContext;
@@ -77,9 +90,11 @@ export function AudioEngine({
 		}
 
 		return () => {
-		
+			if (objectUrlRef.current) {
+				URL.revokeObjectURL(objectUrlRef.current);
+			}
 		};
-	}, [src]);
+	}, [file, src]);
 
 	useEffect(() => {
 		if (!audioRef.current) return;
@@ -118,7 +133,7 @@ export function AudioEngine({
 	return (
 		<audio
 			ref={audioRef}
-			src={src}
+			src={src ||undefined}
 			crossOrigin="anonymous"
 			onPlay={() => console.log("playing")}
 			onWaiting={() => setChecking(true)}

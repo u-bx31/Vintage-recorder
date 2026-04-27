@@ -39,7 +39,7 @@ export function Controls({
 	isPlaying,
 	setIsPlaying,
 	loading,
-	setLoading
+	setLoading,
 }: ControlsProps) {
 	const [volume, setVolume] = useState(1);
 	const [progress, setProgress] = useState(0);
@@ -105,6 +105,15 @@ export function Controls({
 		setSeekTo(value);
 		// Reset seekTo after a short delay so it can be triggered again
 		setTimeout(() => setSeekTo(null), 100);
+	};
+
+	const verifyTrackSrc = () => {
+		if (!currentTrack) return;
+		if (currentTrack.file) {
+			return URL.createObjectURL(currentTrack.file);
+		} else {
+			return currentTrack.src || null;
+		}
 	};
 	return (
 		<div className="w-full max-w-md mx-auto space-y-6 mt-8 md:mt-1">
@@ -178,6 +187,7 @@ export function Controls({
 			</div>
 
 			<AudioEngine
+				file={currentTrack?.file || null}
 				src={currentTrack?.src || null}
 				isPlaying={isPlaying}
 				volume={volume}

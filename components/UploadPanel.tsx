@@ -31,6 +31,7 @@ export function UploadPanel({ onAddTrack, setLoading, loading }: UploadPanelProp
 				id: crypto.randomUUID(),
 				title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
 				duration: audio.duration,
+				file: file,
 				src: URL.createObjectURL(file),
 				type: "local",
 			};
