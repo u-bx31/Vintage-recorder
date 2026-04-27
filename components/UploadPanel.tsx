@@ -10,11 +10,12 @@ import { toast } from "sonner";
 
 interface UploadPanelProps {
 	onAddTrack: (track: Track) => void;
+	setLoading: (bool: boolean) => void;
+	loading: boolean;
 }
 
-export function UploadPanel({ onAddTrack }: UploadPanelProps) {
+export function UploadPanel({ onAddTrack, setLoading, loading }: UploadPanelProps) {
 	const [youtubeUrl, setYoutubeUrl] = useState("");
-	const [checking, setChecking] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const handleFileUpload = (
@@ -30,7 +31,7 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 				id: crypto.randomUUID(),
 				title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
 				duration: audio.duration,
-				file: file,
+				src: URL.createObjectURL(file),
 				type: "local",
 			};
 			onAddTrack(newTrack);
@@ -39,26 +40,43 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 	};
 
 	const getVideoData = async (id: string) => {
-		const res = await fetch(`/api/youtube?id=${id}`);
+		const audioSrc = `http://localhost:3002/api/yt/id=${id}`;
+		const res = await fetch(audioSrc);
+
+		const title = decodeURIComponent(
+			res.headers.get("X-Title") || "YouTube Track",
+		);
+		const duration = res.headers.get("X-Duration");
 
 		if (res.status === 404) {
 			toast.error("Video not found", { position: "bottom-right" });
 		} else if (res.status === 400) {
 			toast.error("Invalid video ID", { position: "bottom-right" });
+		} else if (res.status === 429) {
+			toast.error("Too many requests, please try again later", { position: "bottom-right" });
 		} else if (res.status === 500) {
 			toast.error("Server error, try again later", {
 				position: "bottom-right",
 			});
 		}
+			const newTrack: Track = {
+					id: crypto.randomUUID(),
+					title: `${title || "YouTube Track"}`, 
+					duration: duration ? parseFloat(duration) : 0,
+					src: audioSrc,
+					youtubeId: id,
+					type: "youtube",
+				};
 
-		const data = await res.json();
-		return data;
+			onAddTrack(newTrack);
+			setYoutubeUrl("");
+
 	};
 
-	const handleYoutubeAdd = () => {
-		setChecking(true);
+	const handleYoutubeAdd = async () => {
+		setLoading(true);
 		if (!youtubeUrl) {
-			setChecking(false);
+			setLoading(false);
 			return toast.error("Please enter a YouTube URL", {
 				position: "bottom-right",
 			});
@@ -71,22 +89,12 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 		const videoId = match && match[2].length === 11 ? match[2] : null;
 
 		if (videoId) {
-			getVideoData(videoId!).then((data) => {
-				const newTrack: Track = {
-					id: crypto.randomUUID(),
-					title: `${data?.title}`, 
-					duration: data?.duration,
-					youtubeId: videoId,
-					type: "youtube",
-				};
-				onAddTrack(newTrack);
-				setYoutubeUrl("");
-			});
+			await getVideoData(videoId).finally(() => setLoading(false));
 
-			setChecking(false);
+			setLoading(false);
 		} else {
 			toast.error("Invalid video ID", { position: "bottom-right" });
-			setChecking(false);
+			setLoading(false);
 		}
 	};
 
@@ -147,7 +155,7 @@ export function UploadPanel({ onAddTrack }: UploadPanelProps) {
 							onClick={handleYoutubeAdd}
 							size="icon"
 							className="shrink-0">
-							{checking ? (
+							{loading ? (
 								<Loader2Icon className="w-4 h-4 animate-spin " />
 							) : (
 								<Plus className="w-4 h-4" />

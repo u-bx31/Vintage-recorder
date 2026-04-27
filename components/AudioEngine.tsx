@@ -3,89 +3,83 @@
 import React, { useEffect, useRef } from "react";
 
 interface AudioEngineProps {
-	file: File | null;
+	src ?: string | null;
 	isPlaying: boolean;
 	volume: number;
 	onProgress: (currentTime: number, duration: number) => void;
 	onEnded: () => void;
+	setChecking: (bool: boolean) => void;
 	seekTo: number | null;
 	onReady: () => void;
 }
 
 export function AudioEngine({
-	file,
+	src,
 	isPlaying,
 	volume,
+	setChecking,
 	onProgress,
 	onEnded,
 	seekTo,
 	onReady,
 }: AudioEngineProps) {
-	const audioRef = useRef<HTMLAudioElement >(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
+	const audioRef = useRef<HTMLAudioElement>(null);
+	const audioContextRef = useRef<AudioContext | null>(null);
+	const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(
+		null,
+	);
 	const objectUrlRef = useRef<string | null>(null);
 
 	useEffect(() => {
-		if (!file) {
-			if (audioRef.current) {
-				audioRef.current.pause();
-				audioRef.current.src = "";
-			}
-			return;
-		}
-
-		const url = URL.createObjectURL(file);
-		objectUrlRef.current = url;
+		
 
 		if (audioRef.current) {
-			audioRef.current.src = url;
-      if (!audioContextRef.current) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      audioContextRef.current = new AudioContext();
-    }
-    
-    const ctx = audioContextRef.current;
+			if (!audioContextRef.current) {
+				const AudioContext =
+					window.AudioContext || window.webkitAudioContext;
+				audioContextRef.current = new AudioContext();
+			}
 
-    // 2. ONLY create the source if we haven't already
-    if (!sourceNodeRef.current) {
-      sourceNodeRef.current = ctx.createMediaElementSource(audioRef.current);
-    }
+			const ctx = audioContextRef.current;
 
-    const source = sourceNodeRef.current;
+			// 2. ONLY create the source if we haven't already
+			if (!sourceNodeRef.current) {
+				sourceNodeRef.current = ctx.createMediaElementSource(
+					audioRef.current,
+				);
+			}
 
-    // 3. Re-build the filters
-    const bandpass = ctx.createBiquadFilter();
-    bandpass.type = 'bandpass';
-    bandpass.frequency.value = 2000;
+			const source = sourceNodeRef.current;
 
-    const highpass = ctx.createBiquadFilter();
-    highpass.type = 'highpass';
-    highpass.frequency.value = 200;
+			// 3. Re-build the filters
+			const bandpass = ctx.createBiquadFilter();
+			bandpass.type = "bandpass";
+			bandpass.frequency.value = 2000;
 
-    const lowpass = ctx.createBiquadFilter();
-    lowpass.type = 'lowpass';
-    lowpass.frequency.value = 4000;
+			const highpass = ctx.createBiquadFilter();
+			highpass.type = "highpass";
+			highpass.frequency.value = 200;
 
-    // 4. IMPORTANT: Disconnect anything previously connected to the source
-    // This allows you to "re-wire" the chain if settings change
-    source.disconnect(); 
+			const lowpass = ctx.createBiquadFilter();
+			lowpass.type = "lowpass";
+			lowpass.frequency.value = 4000;
 
-    // 5. Connect the chain
-    source.connect(bandpass);
-    bandpass.connect(highpass);
-    highpass.connect(lowpass);
-    lowpass.connect(ctx.destination);
+			// 4. IMPORTANT: Disconnect anything previously connected to the source
+			// This allows you to "re-wire" the chain if settings change
+			source.disconnect();
+
+			// 5. Connect the chain
+			source.connect(bandpass);
+			bandpass.connect(highpass);
+			highpass.connect(lowpass);
+			lowpass.connect(ctx.destination);
 			audioRef.current.load();
 		}
 
 		return () => {
-			if (objectUrlRef.current) {
-				URL.revokeObjectURL(objectUrlRef.current);
-			}
+		
 		};
-	}, [file]);
-
+	}, [src]);
 
 	useEffect(() => {
 		if (!audioRef.current) return;
@@ -124,6 +118,12 @@ export function AudioEngine({
 	return (
 		<audio
 			ref={audioRef}
+			src={src}
+			crossOrigin="anonymous"
+			onPlay={() => console.log("playing")}
+			onWaiting={() => setChecking(true)}
+			onCanPlay={() => setChecking(false)}
+			onPause={() => console.log("paused")}
 			onTimeUpdate={handleTimeUpdate}
 			onEnded={onEnded}
 			onLoadedMetadata={handleLoadedMetadata}

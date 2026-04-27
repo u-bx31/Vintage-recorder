@@ -19,7 +19,8 @@ interface ControlsProps {
 	tracks: Track[];
 	currentTrack: Track | null;
 	setCurrentTrack: (track: Track) => void;
-
+	loading: boolean;
+	setLoading: (bool: boolean) => void;
 	isPlaying: boolean;
 	setIsPlaying: (val: boolean) => void;
 }
@@ -37,6 +38,8 @@ export function Controls({
 	setCurrentTrack,
 	isPlaying,
 	setIsPlaying,
+	loading,
+	setLoading
 }: ControlsProps) {
 	const [volume, setVolume] = useState(1);
 	const [progress, setProgress] = useState(0);
@@ -174,21 +177,19 @@ export function Controls({
 				/>
 			</div>
 
-			{/* Hidden Audio Engines */}
-			{currentTrack?.type === "local" && (
-				<AudioEngine
-					file={currentTrack.file || null}
-					isPlaying={isPlaying}
-					volume={volume}
-					onProgress={handleProgress}
-					onEnded={handleEnded}
-					seekTo={seekTo}
-					onReady={() => {
-						// Optional: handle ready state
-					}}
-				/>
-			)}
-
+			<AudioEngine
+				src={currentTrack?.src || null}
+				isPlaying={isPlaying}
+				volume={volume}
+				setChecking={setLoading}
+				onProgress={handleProgress}
+				onEnded={handleEnded}
+				seekTo={seekTo}
+				onReady={() => {
+					// Optional: handle ready state
+				}}
+			/>
+			{/* 
 			{currentTrack?.type === "youtube" &&
 				currentTrack?.youtubeId &&
 				currentTrack !== null && (
@@ -205,7 +206,7 @@ export function Controls({
 							// Optional: handle ready state
 						}}
 					/>
-				)}
+				)} */}
 		</div>
 	);
 }

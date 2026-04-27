@@ -4,8 +4,9 @@ export interface Track {
   id: string;
   title: string;
   duration: number;
-  file?: File; // For local uploads
-  youtubeId?: string; // For YouTube tracks
+  src?: string; // For local uploads
+  ytApiUrl?: string; // For YouTube tracks-+
+  youtubeId?: string; 
   type: 'local' | 'youtube';
 }
 

@@ -35,6 +35,7 @@ export default function Home() {
 		null,
 	);
 	const [isPlaying, setIsPlaying] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 	const [crackleEnabled, setCrackleEnabled] = useState(false);
 	const crackleAudioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -62,27 +63,27 @@ export default function Home() {
 		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, []);
 
-	// Crackle effect
-	useEffect(() => {
-		if (crackleEnabled && isPlaying) {
-			if (!crackleAudioRef.current) {
-				// Using a public domain crackle sound or generating one
-				// For this demo, we'll use a placeholder or create a simple noise node if possible,
-				// but since we need an audio file, we'll just simulate it or use a data URI if we had one.
-				// Let's just create a silent audio element for now to avoid errors, or use a known public URL.
-				crackleAudioRef.current = new Audio(
-					"https://cdn.pixabay.com/download/audio/2022/03/15/audio_7d2f9b2b81.mp3?filename=vinyl-crackle-105151.mp3",
-				);
-				crackleAudioRef.current.loop = true;
-				crackleAudioRef.current.volume = 0.2;
-			}
-			crackleAudioRef.current.play().catch(() => {});
-		} else {
-			if (crackleAudioRef.current) {
-				crackleAudioRef.current.pause();
-			}
-		}
-	}, [crackleEnabled, isPlaying]);
+	// // Crackle effect
+	// useEffect(() => {
+	// 	if (crackleEnabled && isPlaying) {
+	// 		if (!crackleAudioRef.current) {
+	// 			// Using a public domain crackle sound or generating one
+	// 			// For this demo, we'll use a placeholder or create a simple noise node if possible,
+	// 			// but since we need an audio file, we'll just simulate it or use a data URI if we had one.
+	// 			// Let's just create a silent audio element for now to avoid errors, or use a known public URL.
+	// 			crackleAudioRef.current = new Audio(
+	// 				"https://cdn.pixabay.com/download/audio/2022/03/15/audio_7d2f9b2b81.mp3?filename=vinyl-crackle-105151.mp3",
+	// 			);
+	// 			crackleAudioRef.current.loop = true;
+	// 			crackleAudioRef.current.volume = 0.2;
+	// 		}
+	// 		crackleAudioRef.current.play().catch(() => {});
+	// 	} else {
+	// 		if (crackleAudioRef.current) {
+	// 			crackleAudioRef.current.pause();
+	// 		}
+	// 	}
+	// }, [crackleEnabled, isPlaying]);
 
 	const handleAddTrack = async (track: Track) => {
 		await addTrack(track);
@@ -137,7 +138,7 @@ export default function Home() {
 									<h4 className="text-sm font-extrabold mb-3 text-amber-950">
 										Add New Track
 									</h4>
-									<UploadPanel onAddTrack={handleAddTrack} />
+									<UploadPanel onAddTrack={handleAddTrack}  setLoading={setIsLoading} loading={isLoading}/>
 								</div>
 								<div>
 									<h4 className="text-sm font-extrabold mb-3 text-amber-950">
@@ -203,6 +204,8 @@ export default function Home() {
 
 						<Controls
 							tracks={tracks}
+							loading={isLoading}
+							setLoading={setIsLoading}
 							currentTrack={currentTrack}
 							setCurrentTrack={setCurrentTrack}
 							isPlaying={isPlaying}
